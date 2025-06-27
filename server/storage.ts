@@ -11,6 +11,7 @@ export interface IStorage {
   
   getProductVariants(): Promise<ProductVariant[]>;
   updateProductVariant(id: number, productTags: Array<{text: string, type: 'group' | 'product', color: 'blue' | 'red'}>): Promise<ProductVariant>;
+  createNewGroup(sourceVariantId: number, tagText: string): Promise<ProductVariant>;
 }
 
 export class MemStorage implements IStorage {
@@ -144,6 +145,32 @@ export class MemStorage implements IStorage {
     const updated = { ...variant, productTags };
     this.productVariants.set(id, updated);
     return updated;
+  }
+
+  async createNewGroup(sourceVariantId: number, tagText: string): Promise<ProductVariant> {
+    const sourceVariant = this.productVariants.get(sourceVariantId);
+    if (!sourceVariant) {
+      throw new Error("Source variant not found");
+    }
+
+    // Remove the tag from source variant
+    const updatedSourceTags = sourceVariant.productTags.filter(tag => tag.text !== tagText);
+    const updatedSource = { ...sourceVariant, productTags: updatedSourceTags };
+    this.productVariants.set(sourceVariantId, updatedSource);
+
+    // Create new variant with the same seller, category, brand but only the moved tag
+    const newVariant: ProductVariant = {
+      id: this.currentProductId++,
+      serialNumber: Math.max(...Array.from(this.productVariants.values()).map(v => v.serialNumber)) + 1,
+      seller: sourceVariant.seller,
+      eeCategory: sourceVariant.eeCategory,
+      brand: sourceVariant.brand,
+      productTags: [{ text: tagText, type: "product", color: "blue" }],
+      groupingLogic: sourceVariant.groupingLogic
+    };
+
+    this.productVariants.set(newVariant.id, newVariant);
+    return newVariant;
   }
 }
 

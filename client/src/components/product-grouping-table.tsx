@@ -6,7 +6,6 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import { DraggableTag } from "@/components/draggable-tag";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { X, Info, Plus } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -16,7 +15,7 @@ export function ProductGroupingTable() {
   const [showCreateGroup, setShowCreateGroup] = useState(false);
   const [showProductDetails, setShowProductDetails] = useState(false);
   const [selectedProductInfo, setSelectedProductInfo] = useState<string>("");
-  const [groupName, setGroupName] = useState("");
+  const [selectedTag, setSelectedTag] = useState<{text: string, variantId: number} | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -34,8 +33,25 @@ export function ProductGroupingTable() {
     },
   });
 
-  const handleTagClick = (tag: {text: string, type: 'group' | 'product', color: 'blue' | 'red'}) => {
-    if (tag.type === 'group') {
+  const createGroupMutation = useMutation({
+    mutationFn: async ({ sourceVariantId, tagText }: { sourceVariantId: number; tagText: string }) => {
+      const response = await apiRequest("POST", "/api/product-variants/create-group", { sourceVariantId, tagText });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/product-variants"] });
+      toast({
+        title: "New Group Created",
+        description: "The tag has been moved to a new group successfully.",
+      });
+      setShowCreateGroup(false);
+      setSelectedTag(null);
+    },
+  });
+
+  const handleTagClick = (tag: {text: string, type: 'group' | 'product', color: 'blue' | 'red'}, variantId: number) => {
+    if (tag.color === 'blue') {
+      setSelectedTag({ text: tag.text, variantId });
       setShowCreateGroup(true);
     } else {
       setSelectedProductInfo(tag.text);
@@ -68,13 +84,11 @@ export function ProductGroupingTable() {
   };
 
   const handleCreateGroup = () => {
-    if (groupName.trim()) {
-      toast({
-        title: "Group Created",
-        description: `New group "${groupName}" has been created.`,
+    if (selectedTag) {
+      createGroupMutation.mutate({
+        sourceVariantId: selectedTag.variantId,
+        tagText: selectedTag.text
       });
-      setGroupName("");
-      setShowCreateGroup(false);
     }
   };
 
@@ -112,7 +126,7 @@ export function ProductGroupingTable() {
                         <DraggableTag
                           key={index}
                           tag={tag}
-                          onClick={() => handleTagClick(tag)}
+                          onClick={() => handleTagClick(tag, variant.id)}
                           onDrop={(droppedTag) => handleDrop(droppedTag, variant)}
                         />
                       ))}
@@ -138,16 +152,25 @@ export function ProductGroupingTable() {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <Input
-              placeholder="Enter group name..."
-              value={groupName}
-              onChange={(e) => setGroupName(e.target.value)}
-            />
+            <p className="text-sm text-gray-600">
+              {selectedTag && `Move "${selectedTag.text}" to a new group with the same seller, category, and brand?`}
+            </p>
             <div className="flex gap-2">
-              <Button onClick={handleCreateGroup} className="flex-1">
-                Create Group
+              <Button 
+                onClick={handleCreateGroup} 
+                className="flex-1"
+                disabled={createGroupMutation.isPending}
+              >
+                {createGroupMutation.isPending ? "Creating..." : "Create New Group"}
               </Button>
-              <Button variant="outline" onClick={() => setShowCreateGroup(false)} className="flex-1">
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setShowCreateGroup(false);
+                  setSelectedTag(null);
+                }} 
+                className="flex-1"
+              >
                 Cancel
               </Button>
             </div>

@@ -65,6 +65,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/product-variants/create-group", async (req, res) => {
+    try {
+      const { sourceVariantId, tagText } = req.body;
+      
+      if (!sourceVariantId || !tagText) {
+        return res.status(400).json({ message: "sourceVariantId and tagText are required" });
+      }
+      
+      const newVariant = await storage.createNewGroup(sourceVariantId, tagText);
+      res.json(newVariant);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to create new group" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
