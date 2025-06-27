@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { DndProvider } from "react-dnd";
+import { DndProvider, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { DraggableTag } from "@/components/draggable-tag";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -9,7 +9,41 @@ import { Button } from "@/components/ui/button";
 import { X, Info, Plus } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 import type { ProductVariant } from "@shared/schema";
+
+function DroppableRow({ variant, children, onDrop }: { 
+  variant: ProductVariant; 
+  children: React.ReactNode; 
+  onDrop: (draggedTag: any, targetRow: ProductVariant) => void;
+}) {
+  const [{ isOver, canDrop }, drop] = useDrop({
+    accept: 'tag',
+    drop: (draggedTag: any) => {
+      onDrop(draggedTag, variant);
+    },
+    canDrop: (draggedTag: any) => {
+      return draggedTag.color === 'blue';
+    },
+    collect: (monitor) => ({
+      isOver: monitor.isOver(),
+      canDrop: monitor.canDrop(),
+    }),
+  });
+
+  return (
+    <TableRow 
+      ref={drop}
+      className={cn(
+        "hover:bg-gray-50 transition-colors",
+        isOver && canDrop && "bg-green-50 border-l-4 border-green-500",
+        isOver && !canDrop && "bg-red-50 border-l-4 border-red-500"
+      )}
+    >
+      {children}
+    </TableRow>
+  );
+}
 
 export function ProductGroupingTable() {
   const [showCreateGroup, setShowCreateGroup] = useState(false);
@@ -59,7 +93,10 @@ export function ProductGroupingTable() {
     }
   };
 
-  const handleDrop = (draggedTag: {text: string, type: 'group' | 'product', color: 'blue' | 'red'}, targetRow: ProductVariant) => {
+  const handleDrop = async (draggedTag: {text: string, type: 'group' | 'product', color: 'blue' | 'red'}, targetRow: ProductVariant) => {
+    // Only allow blue tags to be dropped
+    if (draggedTag.color !== 'blue') return;
+
     // Validation: same seller, category, and brand
     const sourceRow = variants?.find(v => v.productTags.some(tag => tag.text === draggedTag.text));
     if (!sourceRow) return;
@@ -81,13 +118,26 @@ export function ProductGroupingTable() {
     // Add tag to target row if it doesn't already exist
     const tagExists = targetRow.productTags.some(tag => tag.text === draggedTag.text);
     if (!tagExists) {
-      // Remove tag from source row
-      const updatedSourceTags = sourceRow.productTags.filter(tag => tag.text !== draggedTag.text);
-      updateVariantMutation.mutate({ id: sourceRow.id, productTags: updatedSourceTags });
+      try {
+        // Remove tag from source row
+        const updatedSourceTags = sourceRow.productTags.filter(tag => tag.text !== draggedTag.text);
+        await updateVariantMutation.mutateAsync({ id: sourceRow.id, productTags: updatedSourceTags });
 
-      // Add tag to target row
-      const updatedTargetTags = [...targetRow.productTags, draggedTag];
-      updateVariantMutation.mutate({ id: targetRow.id, productTags: updatedTargetTags });
+        // Add tag to target row
+        const updatedTargetTags = [...targetRow.productTags, draggedTag];
+        await updateVariantMutation.mutateAsync({ id: targetRow.id, productTags: updatedTargetTags });
+        
+        toast({
+          title: "Tag Moved",
+          description: `Successfully moved "${draggedTag.text}" to the target group.`,
+        });
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to move tag. Please try again.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -121,7 +171,7 @@ export function ProductGroupingTable() {
             </TableHeader>
             <TableBody>
               {variants?.map((variant) => (
-                <TableRow key={variant.id} className="hover:bg-gray-50">
+                <DroppableRow key={variant.id} variant={variant} onDrop={handleDrop}>
                   <TableCell className="font-medium">
                     {variant.serialNumber}
                   </TableCell>
@@ -143,7 +193,7 @@ export function ProductGroupingTable() {
                   <TableCell className="text-gray-500">
                     {variant.groupingLogic}
                   </TableCell>
-                </TableRow>
+                </DroppableRow>
               ))}
             </TableBody>
           </Table>
