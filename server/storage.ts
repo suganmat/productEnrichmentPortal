@@ -166,7 +166,7 @@ export class MemStorage implements IStorage {
       eeCategory: sourceVariant.eeCategory,
       brand: sourceVariant.brand,
       productTags: [{ text: tagText, type: "product", color: "blue" }],
-      groupingLogic: sourceVariant.groupingLogic
+      groupingLogic: "New group"
     };
 
     this.productVariants.set(newVariant.id, newVariant);

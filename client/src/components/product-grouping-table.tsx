@@ -64,6 +64,9 @@ export function ProductGroupingTable() {
     const sourceRow = variants?.find(v => v.productTags.some(tag => tag.text === draggedTag.text));
     if (!sourceRow) return;
 
+    // Don't allow dropping on the same row
+    if (sourceRow.id === targetRow.id) return;
+
     if (sourceRow.seller !== targetRow.seller || 
         sourceRow.eeCategory !== targetRow.eeCategory || 
         sourceRow.brand !== targetRow.brand) {
@@ -78,8 +81,13 @@ export function ProductGroupingTable() {
     // Add tag to target row if it doesn't already exist
     const tagExists = targetRow.productTags.some(tag => tag.text === draggedTag.text);
     if (!tagExists) {
-      const updatedTags = [...targetRow.productTags, draggedTag];
-      updateVariantMutation.mutate({ id: targetRow.id, productTags: updatedTags });
+      // Remove tag from source row
+      const updatedSourceTags = sourceRow.productTags.filter(tag => tag.text !== draggedTag.text);
+      updateVariantMutation.mutate({ id: sourceRow.id, productTags: updatedSourceTags });
+
+      // Add tag to target row
+      const updatedTargetTags = [...targetRow.productTags, draggedTag];
+      updateVariantMutation.mutate({ id: targetRow.id, productTags: updatedTargetTags });
     }
   };
 
