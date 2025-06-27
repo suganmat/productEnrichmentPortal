@@ -18,7 +18,7 @@ export function DraggableTag({ tag, onClick, onDrop }: DraggableTagProps) {
   const [{ isDragging }, drag] = useDrag({
     type: 'tag',
     item: tag,
-    canDrag: tag.type === 'group',
+    canDrag: tag.color === 'blue',
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
@@ -40,8 +40,8 @@ export function DraggableTag({ tag, onClick, onDrop }: DraggableTagProps) {
     onClick();
   };
 
-  const ref = (node: HTMLSpanElement) => {
-    if (tag.type === 'group') {
+  const setRefs = (node: HTMLDivElement) => {
+    if (tag.color === 'blue') {
       drag(drop(node));
     } else {
       drop(node);
@@ -50,7 +50,7 @@ export function DraggableTag({ tag, onClick, onDrop }: DraggableTagProps) {
 
   return (
     <Badge
-      ref={ref}
+      ref={setRefs}
       variant={tag.color === 'blue' ? 'secondary' : 'destructive'}
       className={cn(
         "cursor-pointer transition-all duration-200",
@@ -59,7 +59,7 @@ export function DraggableTag({ tag, onClick, onDrop }: DraggableTagProps) {
           : "bg-red-100 text-red-800 hover:bg-red-200",
         isDragging && "opacity-50",
         isOver && "ring-2 ring-primary ring-offset-1",
-        tag.type === 'group' && "cursor-move"
+        tag.color === 'blue' && "cursor-move"
       )}
       onDoubleClick={handleDoubleClick}
     >

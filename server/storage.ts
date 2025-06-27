@@ -64,39 +64,27 @@ export class MemStorage implements IStorage {
     const productData: Omit<ProductVariant, 'id'>[] = [
       {
         serialNumber: 1,
-        seller: "TechMart",
-        eeCategory: "Mobile phones",
+        seller: "Westcoast",
+        eeCategory: "TV",
         brand: "Samsung",
         productTags: [
-          { text: "Galaxy S23", type: "group", color: "blue" },
-          { text: "256GB", type: "product", color: "red" },
-          { text: "Flagship", type: "group", color: "blue" }
+          { text: "Samsung QLED TV | QLED43XYZ | 43 inch", type: "product", color: "blue" },
+          { text: "Samsung QLED TV | QLED55XYZ | 55 inch", type: "product", color: "blue" },
+          { text: "Samsung QLED TV | QLED55XYZ | 55 inch", type: "product", color: "red" }
         ],
-        groupingLogic: "Brand + Model"
+        groupingLogic: "Screen size"
       },
       {
         serialNumber: 2,
-        seller: "TechMart",
-        eeCategory: "Mobile phones",
-        brand: "Samsung",
+        seller: "Exertis",
+        eeCategory: "Audio~Earbuds",
+        brand: "Atp",
         productTags: [
-          { text: "Galaxy S23", type: "group", color: "blue" },
-          { text: "128GB", type: "product", color: "red" },
-          { text: "Flagship", type: "group", color: "blue" }
+          { text: "atp-beats-solo-buds | ABC1234 | Matte black", type: "product", color: "blue" },
+          { text: "atp-beats-solo-buds pro | ABCX1234 | Artic purple", type: "product", color: "blue" },
+          { text: "atp-beats-solo-buds | ABC1234 | Artic purple", type: "product", color: "red" }
         ],
-        groupingLogic: "Brand + Model"
-      },
-      {
-        serialNumber: 3,
-        seller: "MobileHub",
-        eeCategory: "Mobile phones",
-        brand: "Apple",
-        productTags: [
-          { text: "iPhone 14", type: "group", color: "blue" },
-          { text: "Pro Max", type: "product", color: "red" },
-          { text: "512GB", type: "product", color: "red" }
-        ],
-        groupingLogic: "Brand + Model"
+        groupingLogic: "Colour"
       }
     ];
 
