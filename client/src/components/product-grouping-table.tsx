@@ -4,9 +4,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { DndProvider, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { DraggableTag } from "@/components/draggable-tag";
+import { ConfirmationModal } from "@/components/confirmation-modal";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { X, Info, Plus } from "lucide-react";
+import { X, Info, Plus, Check } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -48,6 +49,7 @@ function DroppableRow({ variant, children, onDrop }: {
 export function ProductGroupingTable() {
   const [showCreateGroup, setShowCreateGroup] = useState(false);
   const [showProductDetails, setShowProductDetails] = useState(false);
+  const [showApprovalConfirmation, setShowApprovalConfirmation] = useState(false);
   const [selectedProductInfo, setSelectedProductInfo] = useState<string>("");
   const [selectedTag, setSelectedTag] = useState<{text: string, variantId: number} | null>(null);
   const { toast } = useToast();
@@ -80,6 +82,20 @@ export function ProductGroupingTable() {
       });
       setShowCreateGroup(false);
       setSelectedTag(null);
+    },
+  });
+
+  const approveGroupingsMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", "/api/product-variants/approve", {});
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Product groupings approved successfully!",
+      });
+      setShowApprovalConfirmation(false);
     },
   });
 
@@ -150,6 +166,10 @@ export function ProductGroupingTable() {
     }
   };
 
+  const handleApproveGroupings = () => {
+    approveGroupingsMutation.mutate();
+  };
+
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -198,6 +218,17 @@ export function ProductGroupingTable() {
             </TableBody>
           </Table>
         </div>
+      </div>
+
+      <div className="flex justify-end mt-8">
+        <Button 
+          onClick={() => setShowApprovalConfirmation(true)}
+          className="bg-primary hover:bg-primary-dark"
+          disabled={approveGroupingsMutation.isPending}
+        >
+          <Check className="w-4 h-4 mr-2" />
+          Approve Changes
+        </Button>
       </div>
 
       {/* Create Group Modal */}
@@ -270,6 +301,16 @@ export function ProductGroupingTable() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Approval Confirmation Modal */}
+      <ConfirmationModal
+        open={showApprovalConfirmation}
+        onClose={() => setShowApprovalConfirmation(false)}
+        onConfirm={handleApproveGroupings}
+        title="Confirm Approval"
+        description="Are you sure you want to approve all product grouping changes? This action cannot be undone."
+        isLoading={approveGroupingsMutation.isPending}
+      />
     </DndProvider>
   );
 }

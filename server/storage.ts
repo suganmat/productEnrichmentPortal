@@ -12,6 +12,7 @@ export interface IStorage {
   getProductVariants(): Promise<ProductVariant[]>;
   updateProductVariant(id: number, productTags: Array<{text: string, type: 'group' | 'product', color: 'blue' | 'red'}>): Promise<ProductVariant>;
   createNewGroup(sourceVariantId: number, tagText: string): Promise<ProductVariant>;
+  approveProductGroupings(): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -171,6 +172,11 @@ export class MemStorage implements IStorage {
 
     this.productVariants.set(newVariant.id, newVariant);
     return newVariant;
+  }
+
+  async approveProductGroupings(): Promise<void> {
+    // In a real application, this would persist the approved product groupings
+    console.log("Product groupings approved");
   }
 }
 

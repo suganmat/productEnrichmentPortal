@@ -80,6 +80,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/product-variants/approve", async (req, res) => {
+    try {
+      await storage.approveProductGroupings();
+      res.json({ message: "Product groupings approved successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to approve product groupings" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
