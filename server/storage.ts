@@ -143,6 +143,12 @@ export class MemStorage implements IStorage {
       throw new Error("Product variant not found");
     }
     
+    // If no tags remain, delete the variant
+    if (productTags.length === 0) {
+      this.productVariants.delete(id);
+      return variant; // Return the deleted variant for confirmation
+    }
+    
     const updated = { ...variant, productTags };
     this.productVariants.set(id, updated);
     return updated;
@@ -156,8 +162,14 @@ export class MemStorage implements IStorage {
 
     // Remove the tag from source variant
     const updatedSourceTags = sourceVariant.productTags.filter(tag => tag.text !== tagText);
-    const updatedSource = { ...sourceVariant, productTags: updatedSourceTags };
-    this.productVariants.set(sourceVariantId, updatedSource);
+    
+    // If source variant has no tags left, delete it
+    if (updatedSourceTags.length === 0) {
+      this.productVariants.delete(sourceVariantId);
+    } else {
+      const updatedSource = { ...sourceVariant, productTags: updatedSourceTags };
+      this.productVariants.set(sourceVariantId, updatedSource);
+    }
 
     // Create new variant with the same seller, category, brand but only the moved tag
     const newVariant: ProductVariant = {
