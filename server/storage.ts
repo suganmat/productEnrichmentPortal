@@ -1,9 +1,9 @@
-import { users, type User, type InsertUser, categoryMappings, type CategoryMapping, type InsertCategoryMapping, productVariants, type ProductVariant, type InsertProductVariant } from "@shared/schema";
+import { users, type User, type UpsertUser, categoryMappings, type CategoryMapping, type InsertCategoryMapping, productVariants, type ProductVariant, type InsertProductVariant, productSKUs, type ProductSKU, type InsertProductSKU } from "@shared/schema";
 
 export interface IStorage {
-  getUser(id: number): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  // User operations for Replit Auth
+  getUser(id: string): Promise<User | undefined>;
+  upsertUser(user: UpsertUser): Promise<User>;
   
   getCategoryMappings(): Promise<CategoryMapping[]>;
   updateCategoryMapping(id: number, selectedCategory: string): Promise<CategoryMapping>;
@@ -13,23 +13,30 @@ export interface IStorage {
   updateProductVariant(id: number, productTags: Array<{text: string, type: 'group' | 'product', color: 'blue' | 'red'}>): Promise<ProductVariant>;
   createNewGroup(sourceVariantId: number, tagText: string): Promise<ProductVariant>;
   approveProductGroupings(): Promise<void>;
+  
+  // Product enrichment operations
+  getProductSKUs(page?: number, limit?: number, sortBy?: string, sortOrder?: 'asc' | 'desc', filters?: { seller?: string; brand?: string; category?: string; status?: string }): Promise<{ data: ProductSKU[], total: number }>;
+  createProductSKU(productSKU: InsertProductSKU): Promise<ProductSKU>;
+  updateProductSKU(id: number, updates: Partial<ProductSKU>): Promise<ProductSKU>;
 }
 
 export class MemStorage implements IStorage {
-  private users: Map<number, User>;
+  private users: Map<string, User>;
   private categoryMappings: Map<number, CategoryMapping>;
   private productVariants: Map<number, ProductVariant>;
-  private currentUserId: number;
+  private productSKUs: Map<number, ProductSKU>;
   private currentCategoryId: number;
   private currentProductId: number;
+  private currentSKUId: number;
 
   constructor() {
     this.users = new Map();
     this.categoryMappings = new Map();
     this.productVariants = new Map();
-    this.currentUserId = 1;
+    this.productSKUs = new Map();
     this.currentCategoryId = 1;
     this.currentProductId = 1;
+    this.currentSKUId = 1;
     
     this.initializeData();
   }
@@ -94,22 +101,56 @@ export class MemStorage implements IStorage {
       const variant: ProductVariant = { ...data, id: this.currentProductId++ };
       this.productVariants.set(variant.id, variant);
     });
+
+    // Initialize product SKUs with sample data
+    const skuData: Omit<ProductSKU, 'id' | 'dateUploaded'>[] = [
+      {
+        mpn: "MPN-001",
+        productName: "Samsung Galaxy S24 Ultra",
+        seller: "Westcoast",
+        brand: "Samsung",
+        category: "Mobile phones",
+        status: "Submitted"
+      },
+      {
+        mpn: "MPN-002",
+        productName: "Sony WH-1000XM4 Headphones",
+        seller: "Exertis",
+        brand: "Sony",
+        category: "Audio equipment",
+        status: "Saved"
+      },
+      {
+        mpn: "MPN-003",
+        productName: "Dell XPS 13 Laptop",
+        seller: "TechTrade",
+        brand: "Dell",
+        category: "Computers",
+        status: "Submitted"
+      }
+    ];
+
+    skuData.forEach(data => {
+      const sku: ProductSKU = { ...data, id: this.currentSKUId++, dateUploaded: new Date() };
+      this.productSKUs.set(sku.id, sku);
+    });
   }
 
-  async getUser(id: number): Promise<User | undefined> {
+  async getUser(id: string): Promise<User | undefined> {
     return this.users.get(id);
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
-  }
-
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.currentUserId++;
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    const user: User = {
+      id: userData.id || crypto.randomUUID(),
+      email: userData.email ?? null,
+      firstName: userData.firstName ?? null,
+      lastName: userData.lastName ?? null,
+      profileImageUrl: userData.profileImageUrl ?? null,
+      createdAt: userData.createdAt ?? new Date(),
+      updatedAt: new Date(),
+    };
+    this.users.set(user.id, user);
     return user;
   }
 
@@ -189,6 +230,79 @@ export class MemStorage implements IStorage {
   async approveProductGroupings(): Promise<void> {
     // In a real application, this would persist the approved product groupings
     console.log("Product groupings approved");
+  }
+
+  async getProductSKUs(
+    page: number = 1,
+    limit: number = 10,
+    sortBy: string = 'dateUploaded',
+    sortOrder: 'asc' | 'desc' = 'desc',
+    filters?: { seller?: string; brand?: string; category?: string; status?: string }
+  ): Promise<{ data: ProductSKU[], total: number }> {
+    let skus = Array.from(this.productSKUs.values());
+    
+    // Apply filters
+    if (filters) {
+      if (filters.seller) {
+        skus = skus.filter(sku => sku.seller.toLowerCase().includes(filters.seller!.toLowerCase()));
+      }
+      if (filters.brand) {
+        skus = skus.filter(sku => sku.brand.toLowerCase().includes(filters.brand!.toLowerCase()));
+      }
+      if (filters.category) {
+        skus = skus.filter(sku => sku.category.toLowerCase().includes(filters.category!.toLowerCase()));
+      }
+      if (filters.status) {
+        skus = skus.filter(sku => sku.status === filters.status);
+      }
+    }
+
+    // Sort
+    skus.sort((a, b) => {
+      let aValue, bValue;
+      
+      if (sortBy === 'dateUploaded') {
+        aValue = a.dateUploaded!.getTime();
+        bValue = b.dateUploaded!.getTime();
+      } else {
+        aValue = (a as any)[sortBy];
+        bValue = (b as any)[sortBy];
+      }
+      
+      if (sortOrder === 'asc') {
+        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+      } else {
+        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+      }
+    });
+
+    const total = skus.length;
+    const offset = (page - 1) * limit;
+    const data = skus.slice(offset, offset + limit);
+
+    return { data, total };
+  }
+
+  async createProductSKU(productSKUData: InsertProductSKU): Promise<ProductSKU> {
+    const productSKU: ProductSKU = {
+      ...productSKUData,
+      id: this.currentSKUId++,
+      dateUploaded: new Date(),
+      status: productSKUData.status || "Saved",
+    };
+    this.productSKUs.set(productSKU.id, productSKU);
+    return productSKU;
+  }
+
+  async updateProductSKU(id: number, updates: Partial<ProductSKU>): Promise<ProductSKU> {
+    const sku = this.productSKUs.get(id);
+    if (!sku) {
+      throw new Error("Product SKU not found");
+    }
+    
+    const updated = { ...sku, ...updates };
+    this.productSKUs.set(id, updated);
+    return updated;
   }
 }
 
