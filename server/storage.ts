@@ -110,7 +110,7 @@ export class MemStorage implements IStorage {
         seller: "Westcoast",
         brand: "Samsung",
         category: "Mobile phones",
-        status: "Submitted"
+        status: "To be reviewed"
       },
       {
         mpn: "MPN-002",
@@ -118,7 +118,7 @@ export class MemStorage implements IStorage {
         seller: "Exertis",
         brand: "Sony",
         category: "Audio equipment",
-        status: "Saved"
+        status: "Under review"
       },
       {
         mpn: "MPN-003",
@@ -126,7 +126,31 @@ export class MemStorage implements IStorage {
         seller: "TechTrade",
         brand: "Dell",
         category: "Computers",
-        status: "Submitted"
+        status: "Reviewed"
+      },
+      {
+        mpn: "27US550-W.AEK",
+        productName: "LG UltraFine 27US550-W Monitor",
+        seller: "Westcoast",
+        brand: "LG",
+        category: "Monitors",
+        status: "To be reviewed"
+      },
+      {
+        mpn: "MPN-005",
+        productName: "iPhone 15 Pro Max",
+        seller: "Exertis",
+        brand: "Apple",
+        category: "Mobile phones",
+        status: "Under review"
+      },
+      {
+        mpn: "MPN-006",
+        productName: "MacBook Pro 16-inch",
+        seller: "TechTrade",
+        brand: "Apple",
+        category: "Computers",
+        status: "Reviewed"
       }
     ];
 

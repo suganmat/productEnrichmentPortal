@@ -71,10 +71,12 @@ export function ProductEnrichmentTable() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Submitted':
+      case 'To be reviewed':
+        return 'bg-red-100 text-red-800 hover:bg-red-200';
+      case 'Under review':
+        return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200';
+      case 'Reviewed':
         return 'bg-green-100 text-green-800 hover:bg-green-200';
-      case 'Saved':
-        return 'bg-blue-100 text-blue-800 hover:bg-blue-200';
       default:
         return 'bg-gray-100 text-gray-800 hover:bg-gray-200';
     }
@@ -165,8 +167,9 @@ export function ProductEnrichmentTable() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="Saved">Saved</SelectItem>
-                <SelectItem value="Submitted">Submitted</SelectItem>
+                <SelectItem value="To be reviewed">To be reviewed</SelectItem>
+                <SelectItem value="Under review">Under review</SelectItem>
+                <SelectItem value="Reviewed">Reviewed</SelectItem>
               </SelectContent>
             </Select>
           </div>
