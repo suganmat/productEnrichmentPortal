@@ -1,0 +1,50 @@
+Without changing the color or style of the already created dashboard,Improve  the existing code by taking instructions from below-   In the product enrichment section , Populate some dummy products which can take some dummy details for every column defined in this section. The statuses column  can have following values 
+- To be reviewed 
+- Under review
+- Reviewed 
+ On clicking a product in the list,  it should open within that layout details with 2 sub-layouts Left sub-layout should be larger. Right sub-layout has to be smaller and needs to be available for all the sub-sections we will discuss below.
+- The left-layout section opened should have 4 sub-sections. The sections should be coming as crossbar on top of the left sub-layout and can be clicked to move to the respective section.  we will have 5 sub-sections - Product specs, Key features , FAQs, Images, HTML assets, Summary
+- Right layout needs to have a chat feature and a big button on top (above chat feature box) to upload files - to can take, pdf, jpeg, doc, png, html script 
+Respective sub- sections on left layout should have following features.
+	a. Product specs
+		-Should have a table with product attributes as Key (product attribute) and value (details). The keys existing as soon as they open has to be non-editable, but the values should be editable.. 
+	
+		example of detail for the left sub-layout is as follows
+Product attribute	Detail
+Brand	LG
+Type	LED
+Screen Size	27 inch
+Display Features	4K Ultra HD, 3840x2160, 60Hz, 300 cd/m²
+Ports	2 x HDMI, DisplayPort 1.4, Headphones (mini-jack)
+What's In The Box	LG UltraFine 27US550-W, HDMI cable, Screws, stand base, Software
+Product Dimensions (H/W/D)	‎ 36.35 cm x 61.35 cm x 4.54 cm
+Weight	‎6.8 kg
+MPN	27US550-W.AEK
+
+		-User should have option to remove existing row in the left-layout , or add new row to the already generated rows. The newly created rows needs to be empty, and should have both product attribute and details editable.
+		- User should be able to navigate the rows to any position they want in the table.
+		-There has to be a button on the top right for this sub- section to undo the changes step-by-step made by the user to this key feature details sub-section. 
+		- There has to be another button on top right of this subsection to add another row with product-attribute and detail.
+		-Then there has to be a save button on the bottom right .
+		
+	b. Key features
+		-Should have details of the product as paragraphs and bullet points. 
+		-There has to be a re-write button on the top right of left  sub layout which has product key features details.
+		-There has to be a another  button on top right in this left sub-layout to undo  the changes step-by-step he made by the user to this key feature details section. 
+		-Then there has to be a save button on the bottom right .
+
+	c. FAQs
+		-Should have a table with product attributes as Key and details of product specs eg: Screen size : 65inch . The keys existing as soon as they open has to be non-editable, the details should be editable.. The right layout should have a chat feature 
+		-There has to be a button on top right to generate more FAQs for this section. On clicking the button, a new block of FAQs needs to be added.
+		-There has to be another  button on top right in  this section for reversing the changes the made by the user to this key feature details section. 
+		-At the bottom left there has to be ‘Save’.
+		- there has to be  button on the top right to upload asset for this section - to can take, pdf, jpeg, doc, png, html script
+
+	d. Images
+		- Image section should have blocks of image, where we can add or remove images. 
+		-Then there has to be a save button on the bottom right .
+	
+	e. HTML asset
+		- Should have a big scrollable section coming as output from a HTML code in the background
+	e. Summary 
+		- Scrollable details section with - summary of whatever was saved in the above sections - Product specs, ,Key features, FAQs, HTML asset and images. 		-  there has to be a submit button which needs to take a final confirmation with a pop up box with an under not that changes can’t be reverse after clicking the confirmation.
