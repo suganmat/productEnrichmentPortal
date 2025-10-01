@@ -3,8 +3,12 @@
 **A next-generation platform for product data enrichment, built for modern e-commerce operations and powered by AI, advanced UX, and robust integrations.**
 
 ---
+# Video Demo link
+https://www.awesomescreenshot.com/video/44816333?key=bfb5fdb6fa8980017fd6d35049143640
 
-## 🚀 Key Features & Differentiators
+
+
+## 🚀 Key Features 
 
 - **AI-powered Category Mapping**
   - Automatic category suggestions based on incoming seller catalog and ML logic.
